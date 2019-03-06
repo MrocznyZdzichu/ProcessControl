@@ -1,1 +1,3 @@
-initialisation
+initialisation;
+simhOperationPoint;
+simTOperationPoint;

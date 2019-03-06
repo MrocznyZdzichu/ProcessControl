@@ -1,3 +1,4 @@
+clear;
 C = 6;
 alpha = 9;
 C_ss = eye(2);          %state vector is output of system
