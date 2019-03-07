@@ -47,3 +47,5 @@ A_ss = double(subs(A))
 B_ss = double(subs(B))
 C_ss = eye(2)
 D_ss = zeros(2, 4)
+
+LinearModel = ss(A_ss, B_ss, C_ss, D_ss, 'InputDelay', [0; op_tauc; 0; 0], 'OutputDelay', [0; op_tau]);
