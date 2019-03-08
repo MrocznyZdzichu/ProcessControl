@@ -43,10 +43,10 @@ Td = op_Td;
 
 %compute final space state matrices
 
-A_ss = double(subs(A))
-B_ss = double(subs(B))
-C_ss = eye(2)
-D_ss = zeros(2, 4)
+A_ss = double(subs(A));
+B_ss = double(subs(B));
+C_ss = eye(2);
+D_ss = zeros(2, 4);
 
-LinearModel = ss(A_ss, B_ss, C_ss, D_ss, 'InputDelay', [0; op_tauc; 0; 0], 'OutputDelay', [0; op_tau]);
-G_LinearModel = tf(LinearModel);
+LinearModel = ss(A_ss, B_ss, C_ss, D_ss, 'InputDelay', [0; op_tauc; 0; 0], 'OutputDelay', [0; op_tau])
+G_LinearModel = tf(LinearModel)
