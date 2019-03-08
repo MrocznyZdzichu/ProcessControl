@@ -18,5 +18,5 @@ Discrete models in space-state `discreteSS` and as transfer function `discreteTF
 ### Simulations:
 To simulate you need to prepare control vector first. You can use `CVstepChange` function to set step changingu-vector.
 To test it with state-space model, you need to offset u first, so it would relate to operating point. You can do it easily
-by `offsetControl' method. Simulation could be run by lsim method - remember to set zero initial conditions (zero = operating point).
+by `offsetControl` method. Simulation could be run by lsim method - remember to set zero initial conditions (zero = operating point).
 G_LinearModel is a transfer function model. It can be simulated with `lsim` too or by computing product with input in Laplace domain.
