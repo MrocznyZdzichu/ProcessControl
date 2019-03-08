@@ -7,10 +7,14 @@ First you should use initialisation script. It sets all constants and operating 
 ## Simulating plant as non-linear:
 Use script NonlinearSimulation.m You can set parameters by changing assigned variables within the script. To use disturbations without noise (equal to operation point values) set amplitudes variables to 0.
 
-## Getting a linear state-space model:
+## Getting a linear models:
 Just run Linearize script (after initialisation!). It will return `LinearModel` object which is a ready state-space model.
 It is described by `A_ss`, `B_ss`, `C_ss`, and `D_ss` matrices. Additionaly transfer function G_LinearModel will be returned.
 
+## Getting a discrete models;
+Call `discretetization` script. Within the script you can adjust sampling time by changing `samplingTime` assginment.
+Discrete models in space-state `discreteSS` and as transfer function `discreteTF` will be returned.
+ 
 ### Simulations:
 To simulate you need to prepare control vector first. You can use `CVstepChange` function to set step changingu-vector.
 To test it with state-space model, you need to offset u first, so it would relate to operating point. You can do it easily
