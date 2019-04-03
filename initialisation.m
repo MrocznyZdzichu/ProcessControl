@@ -17,5 +17,5 @@ op_tau = 6e3;           %latency of output water flow in s
 op_h = 50.57;          %output, water level in cm
 op_T = 42.44;           %output, temperature of output water
 
-op_u = [op_Fh; op_Fc; op_Fd; op_Td];
+op_u = [op_Fh; op_Fc];
 op_X = [op_h; op_T];
