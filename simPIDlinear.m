@@ -13,24 +13,29 @@ y1Step = 20;
 
 y2SP = 0*ones(tspan, 1);
 y2StepTime = 500;
-y2Step = 15;
+y2Step = -15;
 %% 
 
-%setup noises inputs 
+%setup noises inputs and compute their effect on output
 noiseAmpl = 0.1;
 u3 = cumsum(noiseAmpl*randn(tspan, 1));
+G13 = lsim(discreteTF(1, 3), u3);
+G23 = lsim(discreteTF(2, 3), u3);
+
 u4 = cumsum(noiseAmpl*randn(tspan, 1));
+G14 = lsim(discreteTF(1, 4), u4);
+G24 = lsim(discreteTF(2, 4), u4);
 %% 
 %initialize variables for simulation
 y = [0, 0; 0 0];               %output1, output2
 e = [y1SP(1), y2SP(1);
-    y1SP(2), y2SP(2)];                      %uchyb1, uchyb2
+    y1SP(2), y2SP(2)];                %uchyb1, uchyb2
 CV = [0 0; 0 0];                            %pid1, pid2
 
 D11 = [0 0; 0 0];
 D22 = [0 0; 0 0];
 
-u = [op_Fh op_Fc op_Fd op_Td; op_Fh op_Fc op_Fd op_Td];
+u = [0 0; 0 0];
 %% 
 %iterate through each sample
 for i = 2:tspan
@@ -50,7 +55,7 @@ for i = 2:tspan
     if strcmp(odsprzeganie, 'true')
         D22 = lsim(D22TF, CV(:, 1));
         D11 = lsim(D11TF, CV(:, 2));
-        u = [u; [D22(end)+CV(end, 2)+op_Fh, D11(end)+CV(end, 1)+op_Fc], u3(i) + op_Fd, u4(i) + op_Td];
+        u = [u; [D22(end)+CV(end, 2), D11(end)+CV(end, 1)]];
         
     elseif strcmp(odsprzeganie, 'temperatura')
         D22 = lsim(D22TF, CV(:, 1));
@@ -63,21 +68,21 @@ for i = 2:tspan
     end
     %% 
     %limit control signal - no negative water flow
-    if u(end, 1) < 0
-        u(end, 1) = 0;
+    if u(end, 1) < -1*op_Fh
+        u(end, 1) = -1*op_Fh;
     end
-    if u(end, 2) < 0
-        u(end, 2) = 0;
+    if u(end, 2) < -1*op_Fc
+        u(end, 2) = -1*op_Fc;
     end
     %% 
-    u(:, 1) = u(:, 1);
-    u(:, 2) = u(:, 2);
     
-    [y1, y2] = nonlinearSim2(u, op_X, i+1, op_tauc/100, op_tau/100);
     %compute output and error of system
-    y = [y; [y1(end)-op_h, y2(end)-op_T]];
+    G12 = lsim(discreteTF(1, 2), u(:, 2));
+    G22 = lsim(discreteTF(2, 2), u(:, 2));
+    G21 = lsim(discreteTF(2, 1), u(:, 1));
+    G11 = lsim(discreteTF(1, 1), u(:, 1));
+    y = [y; [G12(end)+G11(end)+G13(i)+G14(i), G21(end)+G22(end)+G23(i)+G24(i)]];
     e = [e; [[y1SP(i), y2SP(i)] - y(end, :)]];
-    
     disp(i)
 end
 %% 

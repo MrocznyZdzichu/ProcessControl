@@ -1,4 +1,4 @@
-function [] = nonlinearSim1(u, op_X, stop_time, op_tauc, op_tau)
+function [h_out, T_out] = nonlinearSim1(u, op_X, stop_time, op_tauc, op_tau)
 
 t_ = linspace(0, stop_time, stop_time);
 
@@ -11,6 +11,7 @@ delayed_Fc = [delayed_Fc, u(2, 1:end-op_tauc)];
 %output Tout = T(t - tau)
 T_out = X(1, 2)*ones(op_tau, 1);
 T_out = [T_out; X(1:end-op_tau, 2)];
+h_out = X(:, 1);
 
 ts_Fc = interp1(t_, u(2, :), t);
 ts_Fh = interp1(t_, u(1, :), t);

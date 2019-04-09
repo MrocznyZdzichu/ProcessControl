@@ -44,7 +44,9 @@ if strcmp(timeFlag, 'continuous')
         title('Porównanie modelu nieliniowego, z ci¹g³ym modelem w postaci transmitancji')
         [y, linear_t, x] = lsim(G_LinearModel, linear_u, t_);
     end
-    y = offsetOutput(y, op_h, op_T); 
+    %present output in absolute
+    
+    y = offsetOutput(y, op_h, op_T);
     hold on
     plot(linear_t, y(:, 1), 'b', 'DisplayName', 'Linearized plant')
     legend();
