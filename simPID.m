@@ -54,12 +54,12 @@ for i = 2:tspan
         
     elseif strcmp(odsprzeganie, 'temperatura')
         D22 = lsim(D22TF, CV(:, 1));
-        u = [u; [D22(end)+CV(end, 2), CV(end, 1)]];
+        u = [u; [D22(end)+CV(end, 2)+op_Fh, CV(end, 1)+op_Fc]];
     elseif strcmp(odsprzeganie, 'poziom')
         D11 = lsim(D11TF, CV(:, 2));
-        u = [u; [CV(end, 2), D11(end)+CV(end, 1)]];
+        u = [u; [CV(end, 2)+op_Fh, D11(end)+CV(end, 1)+op_Fc]];
     else
-        u = [u; [CV(end, 2), CV(end, 1)]];
+        u = [u; [CV(end, 2)+op_Fh, CV(end, 1)+op_Fc]];
     end
     %% 
     %limit control signal - no negative water flow
@@ -69,16 +69,13 @@ for i = 2:tspan
     if u(end, 2) < 0
         u(end, 2) = 0;
     end
-    %% 
-    u(:, 1) = u(:, 1);
-    u(:, 2) = u(:, 2);
-    
+    %%     
     [y1, y2] = nonlinearSim2(u, op_X, i+1, op_tauc/100, op_tau/100);
     %compute output and error of system
     y = [y; [y1(end)-op_h, y2(end)-op_T]];
     e = [e; [[y1SP(i), y2SP(i)] - y(end, :)]];
     
-    disp(i)
+    %disp(i)
 end
 %% 
 %compute quality of control as a mse
