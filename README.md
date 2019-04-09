@@ -14,7 +14,7 @@ It is described by `A_ss`, `B_ss`, `C_ss`, and `D_ss` matrices. Additionaly tran
 ## Getting a discrete models;
 Call `discretization` script. Within the script you can adjust sampling time by changing `samplingTime` assginment.
 Discrete models in space-state `discreteSS` and as transfer function `discreteTF` will be returned. Using this script will perform
-MATLAB's `c2d` function and will return `C` and `D` matrices changed. To avoid this run `discretizationManual' script. It will
+MATLAB's `c2d` function and will return `C` and `D` matrices changed. To avoid this run `discretizationManual` script. It will
 compute `A` and `B` matrices and WILL NOT change `C` and `D`.
  
 ### Simulations:
