@@ -13,7 +13,7 @@ y1Step = 20;
 
 y2SP = 0*ones(tspan, 1);
 y2StepTime = 500;
-y2Step = -15;
+y2Step = 15;
 %% 
 
 %setup noises inputs and compute their effect on output
@@ -83,7 +83,7 @@ for i = 2:tspan
     G11 = lsim(discreteTF(1, 1), u(:, 1));
     y = [y; [G12(end)+G11(end)+G13(i)+G14(i), G21(end)+G22(end)+G23(i)+G24(i)]];
     e = [e; [[y1SP(i), y2SP(i)] - y(end, :)]];
-    disp(i)
+    %disp(i)
 end
 %% 
 %compute quality of control as a mse

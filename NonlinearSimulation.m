@@ -7,10 +7,10 @@ stepTime_Fc = 2e4;    %step time for cold water supply
 timeRange = 1e5;        %time span of simulation
 Fd_amplitude = 0;       %amplitude of water flow disturbance
 Td_amplitude = 0;       %amplitude of temperature disturbance
-step_Fd = 0;
-step_Td = 0;
-stepTime_Fd = 2e4;
-stepTime_Td = 1e4;
+step_Fd = 0;            %step value of flow distrubance
+step_Td = 0;            %step value of temperature disturbance
+stepTime_Fd = 2e4;      %step time of flow disturbance
+stepTime_Td = 1e4;      %step time of temperature disturbance
 
 u = CVstepChange(step_Fh, step_Fc, stepTime_Fh, stepTime_Fc, timeRange, op_Fh, op_Fc, step_Fd, step_Td, stepTime_Fd, stepTime_Td);
 u = addOscilations(u, Fd_amplitude, Td_amplitude, timeRange);

@@ -1,6 +1,6 @@
 %setup simulation time and declutching mode
 tspan = 3E3;
-odsprzeganie = 'true';      %true for using both D
+odsprzeganie = 'temperatura';      %true for using both D
                             %poziom only for D11
                             %temperatura for only D22
                             %false for none declutching
@@ -9,15 +9,15 @@ odsprzeganie = 'true';      %true for using both D
 %configure SP series
 y1SP = 0*ones(tspan, 1);
 y1StepTime = 200;
-y1Step = 20;
+y1Step = 5;
 
 y2SP = 0*ones(tspan, 1);
 y2StepTime = 500;
-y2Step = 15;
+y2Step = 5;
 %% 
 
 %setup noises inputs 
-noiseAmpl = 0.1;
+noiseAmpl = 0.0;
 u3 = cumsum(noiseAmpl*randn(tspan, 1));
 u4 = cumsum(noiseAmpl*randn(tspan, 1));
 %% 
@@ -34,6 +34,8 @@ u = [op_Fh op_Fc op_Fd op_Td; op_Fh op_Fc op_Fd op_Td];
 %% 
 %iterate through each sample
 for i = 2:tspan
+    
+    %make SP step change if the time is right :)
     if i == y1StepTime
         y1SP(i:end) = y1SP(i) + y1Step;
     end
@@ -54,12 +56,12 @@ for i = 2:tspan
         
     elseif strcmp(odsprzeganie, 'temperatura')
         D22 = lsim(D22TF, CV(:, 1));
-        u = [u; [D22(end)+CV(end, 2)+op_Fh, CV(end, 1)+op_Fc]];
+        u = [u; [D22(end)+CV(end, 2)+op_Fh, CV(end, 1)+op_Fc, u3(i) + op_Fd, u4(i) + op_Td]];
     elseif strcmp(odsprzeganie, 'poziom')
         D11 = lsim(D11TF, CV(:, 2));
-        u = [u; [CV(end, 2)+op_Fh, D11(end)+CV(end, 1)+op_Fc]];
+        u = [u; [CV(end, 2)+op_Fh, D11(end)+CV(end, 1)+op_Fc, u3(i) + op_Fd, u4(i) + op_Td]];
     else
-        u = [u; [CV(end, 2)+op_Fh, CV(end, 1)+op_Fc]];
+        u = [u; [CV(end, 2)+op_Fh, CV(end, 1)+op_Fc, u3(i) + op_Fd, u4(i) + op_Td]];
     end
     %% 
     %limit control signal - no negative water flow
@@ -70,7 +72,7 @@ for i = 2:tspan
         u(end, 2) = 0;
     end
     %%     
-    [y1, y2] = nonlinearSim2(u, op_X, i+1, op_tauc/100, op_tau/100);
+    [y1, y2] = nonlinearSim2(u, op_X, i+1, op_tauc/samplingTime, op_tau/samplingTime);
     %compute output and error of system
     y = [y; [y1(end)-op_h, y2(end)-op_T]];
     e = [e; [[y1SP(i), y2SP(i)] - y(end, :)]];
@@ -98,13 +100,13 @@ ylabel('Temperatura wody w zbiorniku [$^{\circ}C$]')
 legend('Symulowana temperatura', 'Temperatura zadana')
 
 subplot(2, 2, 3)
-plot(1:tspan, u(1:tspan, 1)+op_Fh, 'r', 1:tspan, u(1:tspan, 2)+op_Fc, 'b')
+plot(1:tspan, u(1:tspan, 1), 'r', 1:tspan, u(1:tspan, 2), 'b')
 xlabel('Numer probki sygnalu')
 ylabel('Wartosc sygnalu sterujacego [$\frac{cm}{s}$]')
 legend('Doplyw wody cieplej', 'Doplyw wody zimnej')
 
 subplot(2, 2, 4)
-plot(1:tspan, u3+op_Fd, 'b', 1:tspan, u4+op_T, 'r')
+plot(1:tspan, u(1:tspan, 3), 'b', 1:tspan, u(1:tspan, 4), 'r')
 xlabel('Numer probki sygnalu')
 ylabel('Wartosc sygnalu zaklocen')
 legend('Zaklocenie doplywu $[\frac{cm}{s}]$', 'Zaklocenie temperatury $[^{\circ}C]$')
