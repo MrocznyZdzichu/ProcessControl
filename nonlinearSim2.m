@@ -22,8 +22,5 @@ for i = 1:size(u, 1)
         T_out(i) = X(1, 2);
     end
 end
-ts_Fc = interp1(t_, u(:, 2), t);
-ts_Fh = interp1(t_, u(:, 1), t);
-
 end
 

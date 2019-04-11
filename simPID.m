@@ -1,5 +1,5 @@
 %setup simulation time and declutching mode
-tspan = 3E3;
+tspan = 1E3;
 odsprzeganie = 'temperatura';      %true for using both D
                             %poziom only for D11
                             %temperatura for only D22
@@ -8,11 +8,11 @@ odsprzeganie = 'temperatura';      %true for using both D
 
 %configure SP series
 y1SP = 0*ones(tspan, 1);
-y1StepTime = 200;
-y1Step = 5;
+y1StepTime = 50;
+y1Step = 0;
 
 y2SP = 0*ones(tspan, 1);
-y2StepTime = 500;
+y2StepTime = 50;
 y2Step = 5;
 %% 
 
@@ -88,13 +88,13 @@ quality = sqrt(quality(1)^2 + quality(2)^2)
 %plot simulation results
 figure()
 subplot(2, 2, 1)
-plot(1:tspan, y(1:tspan, 1)+op_h, 'b.', 1:tspan, y1SP + op_h, 'r')
+plot(1:tspan, y(1:tspan, 1)+op_h, 'b', 1:tspan, y1SP + op_h, 'r')
 xlabel('Numer probki sygnalu')
 ylabel('Poziom wody w zbiorniku [cm]')
 legend('Symulowany poziom wody', 'Zadany poziom wody')
 
 subplot(2, 2, 2)
-plot(1:tspan, y(1:tspan, 2)+op_T, 'b.', 1:tspan, y2SP+op_T, 'r')
+plot(1:tspan, y(1:tspan, 2)+op_T, 'b', 1:tspan, y2SP+op_T, 'r')
 xlabel('Numer probki sygnalu')
 ylabel('Temperatura wody w zbiorniku [$^{\circ}C$]')
 legend('Symulowana temperatura', 'Temperatura zadana')
