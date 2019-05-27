@@ -1,5 +1,5 @@
 %setup simulation time and declutching mode
-tspan = 1E3;
+tspan = 0.5E3;
 odsprzeganie = 'temperatura';      %true for using both D
                             %poziom only for D11
                             %temperatura for only D22
@@ -9,15 +9,15 @@ odsprzeganie = 'temperatura';      %true for using both D
 %configure SP series
 y1SP = 0*ones(tspan, 1);
 y1StepTime = 50;
-y1Step = 0;
+y1Step = 20;
 
 y2SP = 0*ones(tspan, 1);
 y2StepTime = 50;
-y2Step = 5;
+y2Step = 0;
 %% 
 
 %setup noises inputs 
-noiseAmpl = 0.0;
+noiseAmpl = 0.05;
 u3 = cumsum(noiseAmpl*randn(tspan, 1));
 u4 = cumsum(noiseAmpl*randn(tspan, 1));
 %% 
