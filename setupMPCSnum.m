@@ -2,7 +2,7 @@
 horizControl    = 10;
 horizPred       = 12;
 weightError     = 1;
-weightControl   = 0.05;
+weightControl   = 1;
 
 %build weight diagonal matrices
 psi     = weightError*eye(2*horizPred);

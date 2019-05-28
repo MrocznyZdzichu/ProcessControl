@@ -1,18 +1,18 @@
 %simulation parameters
-tspan = 0.2E3;
+tspan = 0.3E3;
 
 y1StepTime = 50;
 y1Step = 0;
 
-y2StepTime = 150;
-y2Step = 0;
+y2StepTime = 50;
+y2Step = -15;
 
 SP = zeros(tspan, 2);
 SP(y1StepTime:end, 1) = SP(1, 1) + y1Step;
 SP(y2StepTime:end, 2) = SP(1, 2) + y2Step;
 
 %set disturbance signals
-noiseAmpl = 0.2;
+noiseAmpl = 0.0;
 u3 = cumsum(noiseAmpl*randn(tspan, 1));
 u4 = cumsum(noiseAmpl*randn(tspan, 1));
 
@@ -22,15 +22,15 @@ xHistory = [];
 yHistory = [];
 
 %other parameters
-delta_u_max = 2;
+delta_u_max = 0.2;
 u1_max = 70;
 u1_min = 0;
 u2_max = 70;
 u2_min = 0;
-y1_max = 100;
+y1_max = 70;
 y1_min = 0;
 y2_max = 100;
-y2_min = 0;
+y2_min = 27;
 
 %create constraints turbo-vectors
 Umin = [];
@@ -109,7 +109,7 @@ for i = 1 : tspan - horizPred
         x = [X(end, 1) - op_h; X(end, 2) - op_T];
         xHistory = [xHistory; x'];
         v = -1*(x - xp);
-        quality = quality + (x(1)-SP(1, 1))^2 + (x(2)-SP(1, 2))^2;
+        quality = quality + (x(1)-SP(i, 1))^2 + (x(2)-SP(i, 2))^2;
     end  
     fprintf('Iteracja nr %i\n', i)
 end
