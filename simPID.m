@@ -1,5 +1,5 @@
 %setup simulation time and declutching mode
-tspan = 0.5E3;
+tspan = 0.2E3;
 odsprzeganie = 'temperatura';      %true for using both D
                             %poziom only for D11
                             %temperatura for only D22
@@ -9,7 +9,7 @@ odsprzeganie = 'temperatura';      %true for using both D
 %configure SP series
 y1SP = 0*ones(tspan, 1);
 y1StepTime = 50;
-y1Step = 20;
+y1Step = -20;
 
 y2SP = 0*ones(tspan, 1);
 y2StepTime = 50;
@@ -17,7 +17,7 @@ y2Step = 0;
 %% 
 
 %setup noises inputs 
-noiseAmpl = 0.05;
+noiseAmpl = 0.2;
 u3 = cumsum(noiseAmpl*randn(tspan, 1));
 u4 = cumsum(noiseAmpl*randn(tspan, 1));
 %% 
@@ -30,6 +30,7 @@ CV = [0 0; 0 0];                            %pid1, pid2
 D11 = [0 0; 0 0];
 D22 = [0 0; 0 0];
 
+quality = 0;
 u = [op_Fh op_Fc op_Fd op_Td; op_Fh op_Fc op_Fd op_Td];
 %% 
 %iterate through each sample
@@ -72,17 +73,17 @@ for i = 2:tspan
         u(end, 2) = 0;
     end
     %%     
-    [y1, y2] = nonlinearSim2(u, op_X, i+1, op_tauc/samplingTime, op_tau/samplingTime);
+    [y1, y2] = nonlinearSim2(u, op_X,(i+1), op_tauc/samplingTime, op_tau/samplingTime);
     %compute output and error of system
     y = [y; [y1(end)-op_h, y2(end)-op_T]];
     e = [e; [[y1SP(i), y2SP(i)] - y(end, :)]];
-    
+    quality = quality + (y1(end)-op_h - y1SP(i))^2 + (y2(end)-op_T - y2SP(i))^2;
+    fprintf('Iteracja nr %i\n', i)
     %disp(i)
 end
 %% 
 %compute quality of control as a mse
-quality = [sum(e(:, 1).^2)/tspan, sum(e(:, 2).^2)/tspan];
-quality = sqrt(quality(1)^2 + quality(2)^2)
+quality = sqrt(quality)/tspan
 
 %% 
 %plot simulation results

@@ -1,8 +1,8 @@
 %simulation parameters
-tspan = 0.5E3;
+tspan = 0.2E3;
 
 y1StepTime = 50;
-y1Step = 25;
+y1Step = 0;
 
 y2StepTime = 150;
 y2Step = 0;
@@ -12,7 +12,7 @@ SP(y1StepTime:end, 1) = SP(1, 1) + y1Step;
 SP(y2StepTime:end, 2) = SP(1, 2) + y2Step;
 
 %set disturbance signals
-noiseAmpl = 0.0;
+noiseAmpl = 0.2;
 u3 = cumsum(noiseAmpl*randn(tspan, 1));
 u4 = cumsum(noiseAmpl*randn(tspan, 1));
 
@@ -22,11 +22,12 @@ xHistory = [];
 yHistory = [];
 
 %other parameters
-delta_u_max = 0.5;
+delta_u_max = 2;
 u1_max = 70;
 u1_min = 0;
 u2_max = 70;
 u2_min = 0;
+quality = 0;
 %iterate through all timestampls
 for i = 1 : tspan-horizPred
     %on 1st step initialise sim
@@ -39,9 +40,6 @@ for i = 1 : tspan-horizPred
         anty_windup = [0, 0, 0, 0];
     else
         %compute SP turbo vector
-        if i == 60
-            debugAssign = 1
-        end
         if i == y1StepTime
             for j = 1 : horizPred
                 predSP(2*j-1, 1)    = y1Step;
@@ -55,7 +53,7 @@ for i = 1 : tspan-horizPred
         
         %compute control increment
         s1 = c*a*x;
-        s2 = c*V*discreteSS.B(:, 1:2)*(u(i, 1:2)' - [op_Fh; op_Fc]);
+        s2 = c*V*discreteSS.B(:, 1:2)*(u(i-1, 1:2)' - [op_Fh; op_Fc]);
         s3 = c*V*v;
         delta_u = K*(predSP - s1 - s2 - s3);
         
@@ -96,8 +94,10 @@ for i = 1 : tspan-horizPred
     xHistory = [xHistory; x'];
     v = -1*(x - xp);
     
+    quality = quality + (x(1)-SP(1, 1))^2 + (x(2)-SP(1, 2))^2;
     fprintf('Iteracja nr %i\n', i)
 end
+quality = sqrt(quality)/tspan
 %compute output basing on state
 yHistory = zeros(size(xHistory));
 yHistory(:, 1) = xHistory(:, 1) + op_h;
