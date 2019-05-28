@@ -1,8 +1,8 @@
 %setup control parameters
 horizControl    = 10;
 horizPred       = 12;
-weightError     = 1;
-weightControl   = 1;
+weightError     = 0.2;
+weightControl   = 0.45;
 
 %build weight diagonal matrices
 psi     = weightError*eye(2*horizPred);

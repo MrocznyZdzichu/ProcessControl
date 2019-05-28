@@ -1,5 +1,5 @@
 %setup simulation time and declutching mode
-tspan = 0.3E3;
+tspan = 0.5E3;
 odsprzeganie = 'temperatura';      %true for using both D
                             %poziom only for D11
                             %temperatura for only D22
@@ -8,18 +8,20 @@ odsprzeganie = 'temperatura';      %true for using both D
 
 %configure SP series
 y1SP = 0*ones(tspan, 1);
-y1StepTime = 50;
+y1StepTime = 20;
 y1Step = 0;
 
 y2SP = 0*ones(tspan, 1);
-y2StepTime = 50;
-y2Step = 30;
+y2StepTime = 20;
+y2Step = 27;
 %% 
 
 %setup noises inputs 
 noiseAmpl = 0.0;
 u3 = cumsum(noiseAmpl*randn(tspan, 1));
+u3(u3 < -op_Fd) = -op_Fd;
 u4 = cumsum(noiseAmpl*randn(tspan, 1));
+u4(u4 < -op_Td) = -op_Td;
 %% 
 %initialize variables for simulation
 y = [0, 0; 0 0];               %output1, output2
@@ -32,6 +34,8 @@ D22 = [0 0; 0 0];
 
 quality = 0;
 u = [op_Fh op_Fc op_Fd op_Td; op_Fh op_Fc op_Fd op_Td];
+u1max = 50;
+u2max = 50;
 %% 
 %iterate through each sample
 for i = 2:tspan
@@ -71,6 +75,12 @@ for i = 2:tspan
     end
     if u(end, 2) < 0
         u(end, 2) = 0;
+    end
+    if u(end, 1) > u1max
+        u(end, 1) = u1max;
+    end
+    if u(end, 2) > u2max;
+        u(end, 2) = u2max;
     end
     %%     
     [y1, y2] = nonlinearSim2(u, op_X,(i+1), op_tauc/samplingTime, op_tau/samplingTime);

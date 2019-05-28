@@ -1,11 +1,11 @@
 %simulation parameters
-tspan = 0.3E3;
+tspan = 0.5E3;
 
-y1StepTime = 50;
+y1StepTime = 20;
 y1Step = 0;
 
-y2StepTime = 50;
-y2Step = 30;
+y2StepTime = 20;
+y2Step = 27;
 
 SP = zeros(tspan, 2);
 SP(y1StepTime:end, 1) = SP(1, 1) + y1Step;
@@ -14,7 +14,10 @@ SP(y2StepTime:end, 2) = SP(1, 2) + y2Step;
 %set disturbance signals
 noiseAmpl = 0.0;
 u3 = cumsum(noiseAmpl*randn(tspan, 1));
+u3(u3 < -op_Fd) = -op_Fd;
 u4 = cumsum(noiseAmpl*randn(tspan, 1));
+u4(u4 < -op_Td) = -op_Td;
+
 
 %prepare SP turbo vector
 predSP = zeros(2 * horizPred, 1);
@@ -23,9 +26,9 @@ yHistory = [];
 
 %other parameters
 delta_u_max = 2;
-u1_max = 70;
+u1_max = 50;
 u1_min = 0;
-u2_max = 70;
+u2_max = 50;
 u2_min = 0;
 quality = 0;
 %iterate through all timestampls
