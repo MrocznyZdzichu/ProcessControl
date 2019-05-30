@@ -1,22 +1,22 @@
 %simulation parameters
-tspan = 0.5E3;
+tspan = 500;
 
 y1StepTime = 20;
 y1Step = 0;
 
-y2StepTime = 20;
-y2Step = 27;
+y2StepTime = 100;
+y2Step = 0;
 
 SP = zeros(tspan, 2);
 SP(y1StepTime:end, 1) = SP(1, 1) + y1Step;
 SP(y2StepTime:end, 2) = SP(1, 2) + y2Step;
 
 %set disturbance signals
-noiseAmpl = 0.0;
-u3 = cumsum(noiseAmpl*randn(tspan, 1));
-u3(u3 < -op_Fd) = -op_Fd;
-u4 = cumsum(noiseAmpl*randn(tspan, 1));
-u4(u4 < -op_Td) = -op_Td;
+% noiseAmpl = 0.0;
+% u3 = cumsum(noiseAmpl*randn(tspan, 1));
+% u3(u3 < -op_Fd) = -op_Fd;
+% u4 = cumsum(noiseAmpl*randn(tspan, 1));
+% u4(u4 < -op_Td) = -op_Td;
 
 
 %prepare SP turbo vector
@@ -31,47 +31,77 @@ u1_min = 0;
 u2_max = 50;
 u2_min = 0;
 quality = 0;
+
+%init plant
+vk = [0; 0];
+dk = [0; 0];
+x = zeros(2, 1);
+x_prev = zeros(2, 1);
+u = [op_Fh, op_Fc, op_Fd + u3(1), op_Td + u4(1)];
+delta_u = [0;0];
+delta_u_noise = [delta_u', 0, 0];
+anty_windup = [0, 0, 0, 0];
 %iterate through all timestampls
 for i = 1 : tspan-horizPred
-    %on 1st step initialise sim
-    if i == 1
-        v = [0; 0];
-        x = zeros(2, 1);
-        u = [op_Fh, op_Fc, op_Fd + u3(i), op_Td + u4(i)];
-        delta_u = [0;0];
-        delta_u_noise = [delta_u', 0, 0];
-        anty_windup = [0, 0, 0, 0];
-    else
-        %compute SP turbo vector
-        if i == y1StepTime
-            for j = 1 : horizPred
-                predSP(2*j-1, 1)    = y1Step;
-            end  
+    %compute SP turbo vector
+    if i == y1StepTime
+        for j = 1 : horizPred
+            predSP(2*j-1, 1)    = y1Step;
         end
-        if i == y2StepTime
-            for j = 1 : horizPred
-                predSP(2*j, 1)      = y2Step;
-            end
-        end
-        
-        %compute control increment
-        s1 = c*a*x;
-        s2 = c*V*discreteSS.B(:, 1:2)*(u(i-1, 1:2)' - [op_Fh; op_Fc]);
-        s3 = c*V*v;
-        delta_u = K*(predSP - s1 - s2 - s3);
-        
-        %delta_u values limit
-        for k = 1:2
-            if delta_u(k) > 1
-                delta_u(k) = delta_u_max;
-            end
-            if delta_u(k) < -1
-                delta_u(k) = -1 * delta_u_max;
-            end
-        end
-        delta_u_noise = [delta_u', u3(i)-u3(i-1), u4(i)-u4(i-1)];
-        
     end
+    if i == y2StepTime
+        for j = 1 : horizPred
+            predSP(2*j, 1)      = y2Step;
+        end
+    end
+    
+    %wp³yw zak³óceñ stanu
+    if size(u, 1) > 7
+        x_pred = discreteSS.A*x_prev + discreteSS.B(:, 1:2)*...
+                 ([u(end, 1);u(end-7, 2)] - [op_Fh; op_Fc]);
+    else
+        x_pred = discreteSS.A*x_prev + discreteSS.B(:, 1:2)*...
+                 ([u(end, 1);u(1, 2)] - [op_Fh; op_Fc]);
+    end
+    vk = x - x_pred;
+    
+    %wp³yw opóŸnienia stan-wyjœcie
+    if size(xHistory, 1) > 3
+        y = xHistory(end-3, 2);
+        dk = [0; y - x(2, 1)]; 
+    end
+    %compute trajektoria swobodna
+    %sk³adowa od bie¿¹cego stanu
+    s1 = a*x;
+    %sk³adowa od dotychczasowego sterowania
+    if size(u, 1) > 7
+        s2 = V*discreteSS.B(:, 1:2)*...
+            ([u(end-0, 1); u(end-7, 2)]...
+            - [op_Fh; op_Fc]);
+    else
+        s2 = V*discreteSS.B(:, 1:2)*...
+            ([u(end, 1); u(1, 2)] - [op_Fh; op_Fc]);
+    end
+    %wp³yw zak³óceñ stanu i nieliniowoœci wyjœcia
+    s3 = V*(1*vk + 1*dk);
+    Y0 = s1 + s2 + s3;
+    delta_u = K*(predSP - Y0);
+    
+    %delta_u values limit
+    %         for k = 1:2
+    %             if delta_u(k) > 1
+    %                 delta_u(k) = delta_u_max;
+    %             end
+    %             if delta_u(k) < -1
+    %                 delta_u(k) = -1 * delta_u_max;
+    %             end
+    %         end
+    if i > 1
+        delta_u_noise = [delta_u', u3(i)-u3(i-1), u4(i)-u4(i-1)];
+    else
+        delta_u_noise = [delta_u', 0, 0];
+    end
+    
     u_last = u(end, :) + delta_u_noise + anty_windup;
     u_preAW = u_last;
     %limit control signals' values
@@ -86,19 +116,16 @@ for i = 1 : tspan-horizPred
     end
     u = [u; u_last];
     anty_windup = u_last - u_preAW;
-    
-    %predict state as x(k+1) = Ax(k) + Bu(k)
-    xp = discreteSS.A * x + discreteSS.B(:, 1:2) * (u_last(1, 1:2)' - op_u(1:2, 1));
-    
+        
+    x_prev = x;
     %simulate plant output and update state and prediction error
     [X] = nonlinearSim3(u, x + op_X, samplingTime*i, samplingTime*(i+1), op_tauc/samplingTime, op_tau/samplingTime);
     
     x = [X(end, 1) - op_h; X(end, 2) - op_T];
     xHistory = [xHistory; x'];
-    v = -1*(x - xp);
     
     quality = quality + (x(1)-SP(i, 1))^2 + (x(2)-SP(i, 2))^2;
-    fprintf('Iteracja nr %i\n', i)
+    %fprintf('Iteracja nr %i\n', i)
 end
 quality = sqrt(quality)/tspan
 %compute output basing on state

@@ -1,12 +1,27 @@
 %setup control parameters
 horizControl    = 10;
 horizPred       = 12;
-weightError     = 0.2;
-weightControl   = 0.45;
-
+psi1            = 3.5;
+psi2            = 1;
+lambda1         = 100;
+lambda2         = 120;
+psi = [];
+lambda = [];
 %build weight diagonal matrices
-psi     = weightError*eye(2*horizPred);
-lambda  = weightControl*eye(2*horizControl);
+for i = 1 : 2*horizPred
+    if mod(i, 2) == 1
+        psi(i, i) = psi1;
+    else
+        psi(i, i) = psi2;
+    end
+end
+for i = 1 : 2*horizControl
+    if mod(i, 2) == 1
+        lambda(i, i) = lambda1;
+    else
+        lambda(i, i) = lambda2;
+    end
+end
 
 %compute dynamic matrix M
 M = dynamicMatrix(horizPred, horizControl,...
@@ -18,7 +33,7 @@ k = M' * psi * M + lambda;
 K = (R^-1 * Q') * M' * psi;
 
 %take 2 (count of control inputs) first rows of
-K = K(1:2, :);
+K = K([1, 2], :);
 
 % concatenate MPCS-version of plant matrices
 c = eye(2 * horizPred);

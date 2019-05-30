@@ -12,12 +12,12 @@ y1StepTime = 20;
 y1Step = 0;
 
 y2SP = 0*ones(tspan, 1);
-y2StepTime = 20;
-y2Step = 27;
+y2StepTime = 100;
+y2Step = 0;
 %% 
 
 %setup noises inputs 
-noiseAmpl = 0.0;
+noiseAmpl = 0.1;
 u3 = cumsum(noiseAmpl*randn(tspan, 1));
 u3(u3 < -op_Fd) = -op_Fd;
 u4 = cumsum(noiseAmpl*randn(tspan, 1));

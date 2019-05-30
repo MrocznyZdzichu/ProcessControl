@@ -2,7 +2,7 @@ function [X_out] = nonlinearSim3(u, init_state, start_time, stop_time, op_tauc, 
 
 t_ = 1*[start_time, stop_time];
 
-%compute Fc as Fc = Fcin(t-tauc)
+% compute Fc as Fc = Fcin(t-tauc)
 delayed_Fc = zeros(numel(u(:, 2)), 1);
 for i = 1:size(u, 1)
     if i > op_tauc
