@@ -1,28 +1,29 @@
 %setup simulation time and declutching mode
-tspan = 0.5E3;
+tspan = 0.8E3;
 odsprzeganie = 'temperatura';      %true for using both D
-                            %poziom only for D11
-                            %temperatura for only D22
-                            %false for none declutching
-                            %% 
+%poziom only for D11
+%temperatura for only D22
+%false for none declutching
+%%
 
 %configure SP series
 y1SP = 0*ones(tspan, 1);
 y1StepTime = 20;
-y1Step = 0;
+y1Step = -10;
 
 y2SP = 0*ones(tspan, 1);
-y2StepTime = 100;
-y2Step = 0;
-%% 
+y2StepTime = 20;
+y2Step = -15;
+%%
 
-%setup noises inputs 
-noiseAmpl = 0.1;
+%setup noises inputs
+noiseAmpl = 0.0;
 u3 = cumsum(noiseAmpl*randn(tspan, 1));
 u3(u3 < -op_Fd) = -op_Fd;
 u4 = cumsum(noiseAmpl*randn(tspan, 1));
 u4(u4 < -op_Td) = -op_Td;
-%% 
+
+%%
 %initialize variables for simulation
 y = [0, 0; 0 0];               %output1, output2
 e = [y1SP(1), y2SP(1);
@@ -36,7 +37,7 @@ quality = 0;
 u = [op_Fh op_Fc op_Fd op_Td; op_Fh op_Fc op_Fd op_Td];
 u1max = 50;
 u2max = 50;
-%% 
+%%
 %iterate through each sample
 for i = 2:tspan
     
@@ -47,12 +48,12 @@ for i = 2:tspan
     if i == y2StepTime
         y2SP(i:end) = y2SP(i) + y2Step;
     end
-    %% 
+    %%
     %compute CV as controllers output
     pid1 = lsim(R12, e(:, 1));
-    pid2 = lsim(R21, e(:, 2));   
+    pid2 = lsim(R21, e(:, 2));
     CV = [CV; [pid1(end), pid2(end)]];
-    %% 
+    %%
     %compute ultimate input depending on declutching type
     if strcmp(odsprzeganie, 'true')
         D22 = lsim(D22TF, CV(:, 1));
@@ -68,7 +69,7 @@ for i = 2:tspan
     else
         u = [u; [CV(end, 2)+op_Fh, CV(end, 1)+op_Fc, u3(i) + op_Fd, u4(i) + op_Td]];
     end
-    %% 
+    %%
     %limit control signal - no negative water flow
     if u(end, 1) < 0
         u(end, 1) = 0;
@@ -82,7 +83,7 @@ for i = 2:tspan
     if u(end, 2) > u2max;
         u(end, 2) = u2max;
     end
-    %%     
+    %%
     [y1, y2] = nonlinearSim2(u, op_X,(i+1), op_tauc/samplingTime, op_tau/samplingTime);
     %compute output and error of system
     y = [y; [y1(end)-op_h, y2(end)-op_T]];
@@ -91,11 +92,11 @@ for i = 2:tspan
     fprintf('Iteracja nr %i\n', i)
     %disp(i)
 end
-%% 
+%%
 %compute quality of control as a mse
 quality = sqrt(quality)/tspan
 
-%% 
+%%
 %plot simulation results
 figure()
 subplot(2, 2, 1)
